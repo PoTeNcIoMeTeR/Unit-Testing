@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="CalculatorTestsDB.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1031"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="FormatTestCases" custom_title="0" dock_id="3" table="4,15:mainFormatTestCases"/><table title="FormatTestCases" custom_title="0" dock_id="4" table="4,15:mainFormatTestCases"/><table title="FormatTestCases" custom_title="0" dock_id="2" table="4,15:mainFormatTestCases"/><table title="FormatTestCases" custom_title="0" dock_id="1" table="4,15:mainFormatTestCases"/><dock_state state="000000ff00000000fd000000010000000200000400000002b6fc0100000001fc00000000000004000000012800fffffffa000000030100000004fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000012800fffffffb000000160064006f0063006b00420072006f00770073006500320100000000ffffffff0000012800fffffffb000000160064006f0063006b00420072006f00770073006500330100000000ffffffff0000012800fffffffb000000160064006f0063006b00420072006f00770073006500340100000000ffffffff0000012800ffffff000002680000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="FormatTestCases" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="29"/><column index="2" value="296"/><column index="3" value="117"/><column index="4" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">-- Повністю видаляємо стару таблицю, якщо вона існує
+DROP TABLE IF EXISTS FormatTestCases;
+
+-- Створюємо її заново
+CREATE TABLE FormatTestCases (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    TestName TEXT NOT NULL,
+    InputExpression TEXT NOT NULL,
+    ExpectedResult TEXT NOT NULL
+);
+
+-- Наповнюємо її даними
+INSERT INTO FormatTestCases (TestName, InputExpression, ExpectedResult) VALUES
+--  Успішні стандартні сценарії
+('Valid simple', '2+2', '2+2'),
+('Valid with spaces', ' 5 * (10 - 2) ', '5*(10-2)'),
+('Empty expression', '', ''),
+('Valid expression with brackets', '(5-3)*2', '(5-3)*2'),
+
+-- Тести для СПЕЦИФІЧНОЇ логіки унарних операторів ('m'/'p') 
+('Valid unary ''m'' at start', 'm5+10', 'm5+10'),
+('Valid unary ''p'' at start', 'p5-3', 'p5-3'),
+('Valid unary ''m'' in brackets', '5*(m2)', '5*(m2)'),
+('Valid unary ''p'' in brackets', '3+(p5)', '3+(p5)'),
+
+-- Сценарії, що ПРОВАЛЮЮТЬСЯ через некоректну логіку коду 
+('FAIL: Standard unary minus start', '-5+10', '&amp;Error 03 — Невірна синтаксична конструкція вхідного виразу.'),
+('FAIL: Standard unary minus in brackets', '5*(-2)', '&amp;Error 03 — Невірна синтаксична конструкція вхідного виразу.'),
+
+--  Сценарії стандартних помилок 
+('ERROR 01: Digit before bracket', '5(2+2)', '&amp;Error 01 at &lt;1&gt; — Неправильна структура в дужках, помилка на &lt;1&gt; символі.'),
+('ERROR 02: Unknown symbol', '5 # 2', '&amp;Error 02 at &lt;1&gt; — Невідомий оператор на &lt;1&gt; символі.'),
+('ERROR 03: Invalid start with operator', '*5-2', '&amp;Error 03 — Невірна синтаксична конструкція вхідного виразу.'),
+('ERROR 03: Operator after open bracket', '(+5)', '&amp;Error 03 — Невірна синтаксична конструкція вхідного виразу.'),
+('ERROR 04: Two operators', '5++2', '&amp;Error 04 at &lt;2&gt; — Два підряд оператори на &lt;2&gt; символі.'),
+('ERROR 05: Invalid end with operator', '5+2-', '&amp;Error 05 — Незавершений вираз.');
+</sql><current_tab id="0"/></tab_sql></sqlb_project>
